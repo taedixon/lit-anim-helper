@@ -1,0 +1,29 @@
+{
+  "name": "lit-animator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config ./webpack.config.js && cp -r node_modules/@webcomponents/webcomponentsjs dist"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^13.13.4",
+    "@webcomponents/webcomponentsjs": "^2.4.3",
+    "lit-element": "^2.3.1",
+    "ts-loader": "^7.0.1",
+    "tslint": "^6.1.1",
+    "typescript": "^3.8.3",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^4.0.0-beta.2"
+  },
+  "dependencies": {
+    "@material/mwc-checkbox": "^0.14.1",
+    "@material/mwc-formfield": "^0.14.1",
+    "@material/mwc-textfield": "^0.14.1",
+    "@types/xml2js": "^0.4.5",
+    "xml2js": "^0.4.23"
+  }
+}

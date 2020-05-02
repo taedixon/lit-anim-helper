@@ -1,0 +1,35 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+	],
+	"linterOptions": {
+		"exclude": [
+			"ts-src/themes/iconset.ts"
+		]
+	},
+    "jsRules": {},
+    "rules": {
+		"no-unused-class": true,
+		"indent": [true, "tabs"],
+		"linebreak-style": [true, "LF"],
+		"max-line-length": [
+			true,
+			{
+				"limit": 90,
+				"ignore-pattern": "^import |^\\s*<"
+			}
+		],
+		"variable-name": {
+			"options": [
+				"ban-keywords",
+				"check-format",
+				"allow-leading-underscore"
+			]
+		},
+		"align": [true, "statements"]
+	},
+    "rulesDirectory": [
+		"./custom-rules/"
+	]
+}
