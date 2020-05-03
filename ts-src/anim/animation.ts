@@ -3,8 +3,21 @@ import { ChangeEvent } from "..";
 import { ToCheapassTreeNode, CheapassTreeNode } from "../components/cheapass-tree";
 import { AnimationRoot, AnimationComponent } from "./animation-root";
 
+import {v4 as uuidv4} from "uuid";
+
+export interface LayoutFrameOptions {
+	startX: number;
+	startY: number;
+	numberOfFrames: number;
+	width: number;
+	height: number;
+	delay: number;
+	direction: "horizontal" | "vertical"
+}
+
 export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationComponent> {
 
+	private readonly id = uuidv4();
 	public name = "New Animation";
 	public offsetX = 0;
 	public offsetY = 0;
@@ -46,12 +59,33 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 	}
 
 	public toCheapassTreeNode(parentKey = ""): CheapassTreeNode<AnimationComponent> {
-		const key = `${parentKey}${AnimationRoot.JOIN}${this.name}`;
+		const key = `${parentKey}${AnimationRoot.JOIN}${this.id}`;
 		return {
 			label: this.name,
 			key,
 			value: this,
 			items: this.frames.map(f => f.toCheapassTreeNode(key))
 		}
+	}
+
+	public layoutFrames(options: LayoutFrameOptions) {
+		this.frames = [];
+		this.sizeX = options.width;
+		this.sizeY = options.height;
+		let x = options.startX;
+		let y = options.startY;
+		for (let i = 0; i < options.numberOfFrames; i++) {
+			const newframe = new AnimationFrame(this, {
+				x, y, time: options.delay
+			})
+			newframe.name = `Frame ${i}`;
+			this.frames.push(newframe);
+			if (options.direction === "horizontal") {
+				x += options.width;
+			} else {
+				y += options.height;
+			}
+		}
+		this.onChange();
 	}
 }

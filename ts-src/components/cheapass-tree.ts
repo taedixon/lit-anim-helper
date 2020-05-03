@@ -8,12 +8,8 @@ export interface CheapassTreeNode<T> {
 	items?: CheapassTreeNode<T>[]
 }
 
-interface ExpandableNode<T> {
+interface KeyAttribs {
 	expanded: boolean;
-	value: string,
-	key: string,
-	item?: T,
-	children: ExpandableNode<T>[];
 }
 
 export type TreeSelectEvent<T> = CustomEvent<{key: string, value?: T}>;
@@ -50,13 +46,17 @@ export class CheapassTree<T> extends LitElement {
 		]
 	}
 
+	@property()
 	private root?: CheapassTreeNode<T> | ToCheapassTreeNode<T>;
 
 	@property()
-	private nodeList?: ExpandableNode<T>;
+	private nodeAttribs?: Map<string, KeyAttribs>;
 
 	@property()
 	private selected?: string;
+
+	@property()
+	private renderhack = {};
 
 	public set rootNode(node: CheapassTreeNode<T>|ToCheapassTreeNode<T>|undefined) {
 		if (this.root === node) {
@@ -64,13 +64,14 @@ export class CheapassTree<T> extends LitElement {
 		}
 		this.root = node;
 		if (node) {
+			const map = new Map<string, KeyAttribs>();
 			if ("toCheapassTreeNode" in node) {
-				this.nodeList = this.toNodeList(node.toCheapassTreeNode());
+				this.nodeAttribs = this.makeNodeMap(map, node.toCheapassTreeNode());
 			} else {
-				this.nodeList = this.toNodeList(node);
+				this.nodeAttribs = this.makeNodeMap(map, node);
 			}
 		} else {
-			this.nodeList = undefined;
+			this.nodeAttribs = undefined;
 		}
 	}
 
@@ -78,57 +79,68 @@ export class CheapassTree<T> extends LitElement {
 		return this.root;
 	}
 
-	private toNodeList(node: CheapassTreeNode<T>): ExpandableNode<T> {
-		const root: ExpandableNode<T> = {
-			expanded: false,
-			value: node.label,
-			item: node.value,
-			key: node.key,
-			children: node.items?.flatMap(n => this.toNodeList(n)) ?? [],
-		};
-		return root;
+	private makeNodeMap(map: Map<string, KeyAttribs>, node: CheapassTreeNode<T>){
+		map.set(node.key, {expanded: false});
+		if (node.items) {
+			for (const child of node.items) {
+				this.makeNodeMap(map, child);
+			}
+		}
+		return map;
 	}
 
 	public render() {
+		let rootTree: CheapassTreeNode<T> | undefined;
+		if (this.rootNode && "toCheapassTreeNode" in this.rootNode) {
+			rootTree = this.rootNode.toCheapassTreeNode();
+		} else {
+			rootTree = this.rootNode;
+		}
 		return html`
 		<div class="container">
-				${this.nodeList
-					? this.renderList(this.nodeList, "", 0)
+				${rootTree
+					? this.renderList(rootTree, this.renderhack, 0)
 					: html`<pre>Empty!</pre>`}
 		</div>`;
 	}
 
-	public renderList(item: ExpandableNode<T>, parentKey: string, level: number): TemplateResult[] {
+	private renderList(item: CheapassTreeNode<T>, hack: object, level: number): TemplateResult[] {
 		const spacing = "".padStart(level, "  ");
 		let arrow = "";
 		let cssClass = item.key === this.selected ? "selected" : "";
 		let children: TemplateResult[] = [];
-		if (item.children.length > 0) {
-			arrow = item.expanded ? "⮛" : "➢";
-			if (item.expanded) {
-				children = item.children.flatMap(i => this.renderList(i, "", level+1));
+		if (item.items && item.items.length > 0) {
+			const expanded = this.nodeAttribs?.get(item.key)?.expanded;
+			arrow = expanded ? "⮛" : "➢";
+			if (expanded) {
+				children = item.items.flatMap(i => this.renderList(i, hack, level+1));
 			}
 		}
 		const currentNode = html`
 			<pre class="${cssClass}" @click="${() => this.nodeTapped(item)}"><!--
-				-->${spacing}${arrow}${item.value}</pre>`;
+				-->${spacing}${arrow}${item.label}</pre>`;
 		return [currentNode, children].flat();
 	}
 
-	private nodeTapped(node: ExpandableNode<T>) {
-		node.expanded = !node.expanded;
+	public rebuild() {
+		this.renderhack = {};
+	}
+
+	private nodeTapped(node: CheapassTreeNode<T>) {
+		const nodeAttr = this.nodeAttribs?.get(node.key);
+		if (nodeAttr) {
+			nodeAttr.expanded = !nodeAttr.expanded;
+		}
 		this.selected = node.key;
 		this.dispatchEvent(new CustomEvent(
 			"node-selected", {
 				detail: {
 					key: node.key,
-					value: node.item
+					value: node.value
 				},
 				bubbles: true,
 				composed: true,
 			}) as TreeSelectEvent<T>);
-		if (this.nodeList) {
-			this.nodeList = Object.assign({}, this.nodeList);
-		}
+		this.renderhack = {};
 	}
 }

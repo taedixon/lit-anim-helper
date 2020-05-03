@@ -159,7 +159,6 @@ export class AnimatorSpritesheet extends LitElement {
 
 	private drawSelected(context: CanvasRenderingContext2D, selected: AnimationComponent) {
 		if (selected instanceof Animation) {
-			console.log("Paint anim");
 			for (const frame of selected.frames) {
 				this.drawFrame(context, frame);
 			}

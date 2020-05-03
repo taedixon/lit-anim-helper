@@ -1,7 +1,7 @@
 import { Animation } from "./animation";
 import { AnimationFrame } from "./frame";
 import { ChangeEvent } from "..";
-import { ToCheapassTreeNode, CheapassTreeNode } from "../cheapass-tree";
+import { ToCheapassTreeNode, CheapassTreeNode } from "../components/cheapass-tree";
 
 export type AnimationComponent = AnimationRoot|Animation|AnimationFrame;
 

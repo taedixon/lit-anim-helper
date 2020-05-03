@@ -1,14 +1,19 @@
-import { LitElement, customElement, html, css, property } from "lit-element";
+import { LitElement, customElement, html, css, property, TemplateResult } from "lit-element";
 import { Parser } from "xml2js";
 import "./cheapass-tree";
 import { AnimationRoot, AnimationComponent } from "../anim/animation-root";
-import { TreeSelectEvent } from "./cheapass-tree";
+import { TreeSelectEvent, CheapassTree } from "./cheapass-tree";
 import { AnimationFrame } from "../anim/frame";
 import { Animation } from "../anim/animation";
 
 import { ChangeEvent } from "..";
 
 export type AnimLoadedEvent = CustomEvent<AnimationRoot>
+
+import "./object-controls";
+import "@material/mwc-button"
+import "./layout-frames-dialog";
+import { LayoutFramesDialog } from "./layout-frames-dialog";
 
 @customElement("animator-controls")
 export class AnimatorControls extends LitElement {
@@ -50,18 +55,30 @@ export class AnimatorControls extends LitElement {
 	@property()
 	private selected?: AnimationComponent;
 
+	private get layoutDialog() {
+		return this.shadowRoot?.getElementById("layout-frames-dialog") as LayoutFramesDialog;
+	}
+
+	private get animTree() {
+		return this.shadowRoot?.getElementById("anim-tree") as CheapassTree<AnimationComponent>;
+	}
+
 	public render() {
 		return html`
 			<h2>Controls</h2>
 			<label for="xml-input">Choose an animation to edit</label>
 			<input id="xml-input" @input="${this.onFileChange}" type="file" accept=".xml"/>
 			<p class="error">${this.error}</p>
-			<cheapass-tree .rootNode="${this.loadedAnim}"
+			<cheapass-tree id="anim-tree" .rootNode="${this.loadedAnim}"
 				@node-selected="${this.onTreeNodeSelect}">
 			</cheapass-tree>
 			<div class="controls">
 				${this.renderControls(this.selected)}
 			</div>
+			<layout-frames-dialog id="layout-frames-dialog"
+				.selected="${this.selected}"
+				@frames-changed="${this.onFramesChanged}">
+			</layout-frames-dialog>
 		`;
 	}
 
@@ -80,7 +97,11 @@ export class AnimatorControls extends LitElement {
 				"name", "offsetX", "offsetY",
 				"sizeX", "sizeY", "looping", "randomizeStart"
 			] as const;
-			return this.renderControlsGeneric(selected, kind, fields)
+			const custom = html`
+			<mwc-button raised label="Layout Frames"
+				@click="${() => this.layoutDialog.open()}">
+			</mwc-button>`;
+			return this.renderControlsGeneric(selected, kind, fields, custom)
 		} else if (selected instanceof AnimationFrame) {
 			kind = "Frame";
 			const fields = ["x", "y", "time", "alpha", "hitbox", "sound"] as const;
@@ -90,21 +111,23 @@ export class AnimatorControls extends LitElement {
 		}
 	}
 
+
 	private renderControlsGeneric<T extends ChangeEvent>(
 			selected: T,
 			label: string,
-			attribs: Readonly<Array<keyof T & string>>) {
+			attribs: Readonly<Array<keyof T & string>>,
+			custom?: TemplateResult) {
 		return html`
 			<object-controls
 				title="${label}"
 				.fields="${attribs}"
 				.item="${selected}">
+				${custom ? html`<div slot="custom-controls">${custom}</div>` : ""}
 			</object-controls>
 		`;
 	}
 
 	private onFileChange(e: InputEvent) {
-		console.log(e);
 		this.error = "";
 		const input: HTMLInputElement = e.target as HTMLInputElement;
 		if (input.files && input.files.length == 1) {
@@ -115,8 +138,11 @@ export class AnimatorControls extends LitElement {
 	}
 
 	private onTreeNodeSelect(e: TreeSelectEvent<AnimationComponent>) {
-		console.log(e.detail);
 		this.selected = e.detail.value;
+	}
+
+	private onFramesChanged() {
+		this.animTree.rebuild();
 	}
 
 	private readXml(animFile: File) {

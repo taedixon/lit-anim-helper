@@ -5,6 +5,7 @@ import { TextField, TextFieldType } from "@material/mwc-textfield";
 import "@material/mwc-textfield";
 import "@material/mwc-formfield";
 import "@material/mwc-checkbox";
+import { AppStyles } from "../common";
 
 @customElement("object-controls")
 export class ObjectControls<T extends ChangeEvent> extends LitElement {
@@ -15,7 +16,8 @@ export class ObjectControls<T extends ChangeEvent> extends LitElement {
 			:host {
 				display: block;
 			}
-			`
+			`,
+			AppStyles.MWC_INPUT_STYLES
 		]
 	}
 

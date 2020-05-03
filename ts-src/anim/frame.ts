@@ -2,8 +2,10 @@ import { Animation } from "./animation";
 import { ChangeEvent } from "..";
 import { CheapassTreeNode, ToCheapassTreeNode } from "../components/cheapass-tree";
 import { AnimationRoot, AnimationComponent } from "./animation-root";
+import {v4 as uuidv4} from "uuid";
 
 export class AnimationFrame implements ChangeEvent, ToCheapassTreeNode<AnimationComponent> {
+	private readonly id = uuidv4();
 	public readonly animation: Animation;
 	public name = "New Frame";
 	public hitbox = "";
@@ -43,7 +45,7 @@ export class AnimationFrame implements ChangeEvent, ToCheapassTreeNode<Animation
 	}
 
 	public toCheapassTreeNode(parentKey = ""): CheapassTreeNode<AnimationComponent> {
-		const key = `${parentKey}${AnimationRoot.JOIN}${this.name}`
+		const key = `${parentKey}${AnimationRoot.JOIN}${this.id}`
 		return {
 			label: this.name,
 			value: this,
