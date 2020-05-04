@@ -75,8 +75,14 @@ export class AnimatorSpritesheet extends LitElement {
 			<div class="overlay" id="canvas-overlay"></div>
 			<canvas id="canvas">
 			</canvas>
+			<img id="helpful" src="./static/dragdrop.png" style="display:none"/>
 		</div>
 		`;
+	}
+
+	public firstUpdated() {
+		this.shadowRoot?.getElementById("helpful")
+			?.addEventListener("load", () => this.redraw());
 	}
 
 	public setSelected(comp?: AnimationComponent) {
@@ -146,7 +152,9 @@ export class AnimatorSpritesheet extends LitElement {
 			return;
 		}
 		if (!this.spritesheet) {
-			console.log("Can't draw without loaded image");
+			const img = this.shadowRoot?.getElementById("helpful") as HTMLImageElement;
+			console.log(img);
+			context.drawImage(img, 0, 0);
 			return;
 		}
 		this.canvas.width = this.spritesheet.width;

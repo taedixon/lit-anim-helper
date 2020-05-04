@@ -46,7 +46,7 @@ export class LayoutFramesDialog extends LitElement {
 	public render() {
 		return html`
 		<mwc-dialog id="layout-frames-dialog" heading="Layout Frames">
-			<p>Layout a bunch of new frames in a row</p>
+			<p>REPLACE all current frames with a NEW set of sequentially arranged frames</p>
 			<form id="layout-frames-form">
 				<mwc-textfield name="frameCount" label="Number of Frames"></mwc-textfield>
 				<mwc-textfield name="startX" label="Start X"></mwc-textfield>

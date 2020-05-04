@@ -14,6 +14,8 @@ import "./object-controls";
 import "@material/mwc-button"
 import "./layout-frames-dialog";
 import { LayoutFramesDialog } from "./layout-frames-dialog";
+import { AppStyles } from "../common";
+import { Button } from "@material/mwc-button";
 
 @customElement("animator-controls")
 export class AnimatorControls extends LitElement {
@@ -39,10 +41,16 @@ export class AnimatorControls extends LitElement {
 				overflow: auto;
 			}
 
-			.error {
-				color: tomato;
+			.button-wrap {
+				margin: 0.5em 0;
+				text-align: center;
 			}
-			`
+
+			.delete-button {
+				--mdc-theme-primary: tomato;
+			}
+			`,
+			AppStyles.COMMON_CLASSES,
 		]
 	}
 
@@ -98,17 +106,57 @@ export class AnimatorControls extends LitElement {
 				"sizeX", "sizeY", "looping", "randomizeStart"
 			] as const;
 			const custom = html`
-			<mwc-button raised label="Layout Frames"
-				@click="${() => this.layoutDialog.open()}">
-			</mwc-button>`;
+				<div class="button-wrap"><mwc-button raised label="Layout Frames"
+					@click="${() => this.layoutDialog.open()}">
+				</mwc-button></div>
+				${this.renderAddFrameButton(selected)}
+				${this.renderDeleteButton(selected)}`;
 			return this.renderControlsGeneric(selected, kind, fields, custom)
 		} else if (selected instanceof AnimationFrame) {
 			kind = "Frame";
 			const fields = ["x", "y", "time", "alpha", "hitbox", "sound"] as const;
-			return this.renderControlsGeneric(selected, kind, fields)
+			const custom = this.renderDeleteButton(selected);
+			return this.renderControlsGeneric(selected, kind, fields, custom)
 		} else {
 			return "[selected] had an unknown value!";
 		}
+	}
+
+	private renderDeleteButton(item: Animation | AnimationFrame) {
+		const clickAction = (e: InputEvent) => {
+			const target = e.target as Button;
+			if (!target.getAttribute("x-confirm")) {
+				target.setAttribute("x-confirm", "true")
+				target.label = "SUPER DUPER SURE?"
+			} else {
+				item.removeFromParent();
+				this.selected = undefined;
+				this.dispatchEvent(new CustomEvent("node-selected",
+					{detail: {
+						key: ""
+					}}));
+				this.onFramesChanged();
+			}
+		}
+		return html`
+		<div class="button-wrap">
+			<mwc-button raised class="delete-button" label="Delete ${item.name}"
+				@click="${clickAction}">
+			</mwc-button>
+		</div>`;
+	}
+
+	private renderAddFrameButton(item: Animation) {
+		const clickAction = () => {
+			item.addFrame({guessPlacement: true});
+			this.onFramesChanged();
+		}
+		return html`
+		<div class="button-wrap">
+			<mwc-button raised label="Add Frame"
+				@click="${clickAction}">
+			</mwc-button>
+		</div>`;
 	}
 
 

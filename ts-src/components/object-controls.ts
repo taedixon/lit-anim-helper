@@ -6,6 +6,7 @@ import "@material/mwc-textfield";
 import "@material/mwc-formfield";
 import "@material/mwc-checkbox";
 import { AppStyles } from "../common";
+import { Checkbox } from "@material/mwc-checkbox";
 
 @customElement("object-controls")
 export class ObjectControls<T extends ChangeEvent> extends LitElement {
@@ -48,9 +49,13 @@ export class ObjectControls<T extends ChangeEvent> extends LitElement {
 	private renderField(field: keyof T & string, item: T) {
 		const itemValue = item[field];
 		if (typeof itemValue === "boolean") {
+			const action = (e: InputEvent) => {
+				const input = e.target as Checkbox;
+				item[field] = input.checked as any;
+			}
 			return html`
 			<mwc-formfield label="${field}">
-				<mwc-checkbox ?checked="${itemValue}"></mwc-checkbox>
+				<mwc-checkbox @change="${action}" ?checked="${itemValue}"></mwc-checkbox>
 			</mwc-formfield>`;
 		} else {
 			let type: TextFieldType = "text";

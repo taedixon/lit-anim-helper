@@ -21,8 +21,8 @@ interface AnimModel {
 	loop_start_frame?: number|string;
 	frame_size_x: number|string;
 	frame_size_y: number|string;
-	looping?: boolean;
-	randomizeStart?: boolean;
+	looping?: string;
+	randomizeStart?: string;
 }
 
 interface AnimRootModel {

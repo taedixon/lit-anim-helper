@@ -5,7 +5,7 @@ import { AnimationRoot, AnimationComponent } from "./animation-root";
 import {v4 as uuidv4} from "uuid";
 
 export class AnimationFrame implements ChangeEvent, ToCheapassTreeNode<AnimationComponent> {
-	private readonly id = uuidv4();
+	public readonly id = uuidv4();
 	public readonly animation: Animation;
 	public name = "New Frame";
 	public hitbox = "";
@@ -51,6 +51,10 @@ export class AnimationFrame implements ChangeEvent, ToCheapassTreeNode<Animation
 			value: this,
 			key
 		}
+	}
+
+	public removeFromParent() {
+		this.animation.removeFrame(this.id);
 	}
 
 }

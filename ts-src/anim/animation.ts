@@ -15,22 +15,31 @@ export interface LayoutFrameOptions {
 	direction: "horizontal" | "vertical"
 }
 
+export interface AddFrameOptions {
+	position?: {x: number, y: number},
+	guessPlacement?: boolean,
+	duration?: number,
+
+}
+
 export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationComponent> {
 
-	private readonly id = uuidv4();
+	public readonly id = uuidv4();
+	private readonly animRoot: AnimationRoot;
 	public name = "New Animation";
 	public offsetX = 0;
 	public offsetY = 0;
 	public sizeX = 16;
 	public sizeY = 16;
-	public looping = false;
+	public looping = true;
 	public randomizeStart = false;
 
 	public frames: AnimationFrame[] = [];
 
 	public onChange = () => {};
 
-	constructor(model?: AnimModel) {
+	constructor(parent: AnimationRoot, model?: AnimModel) {
+		this.animRoot = parent;
 		if (model) {
 			this.setFromModel(model);
 		}
@@ -42,8 +51,8 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 		this.offsetY = +(model.frame_offset_y ?? this.offsetY);
 		this.sizeX = +model.frame_size_x;
 		this.sizeY = +model.frame_size_y;
-		this.looping = model.looping ?? this.looping;
-		this.randomizeStart = model.randomizeStart ?? this.randomizeStart;
+		this.looping = !(model.looping?.toLowerCase() === "false")
+		this.randomizeStart = model.randomizeStart?.toLowerCase() == 'true';
 
 		this.frames = [model.frame ?? []].flat()
 				.map(frame => {
@@ -51,6 +60,10 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 					f.onChange = () => this.onChange();
 					return f;
 				});
+		this.renameFrames();
+	}
+
+	private renameFrames() {
 		let frameNum = 1;
 		for (const f of this.frames) {
 			f.name = `Frame ${frameNum}`;
@@ -87,5 +100,42 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 			}
 		}
 		this.onChange();
+	}
+
+	public addFrame(options: AddFrameOptions) {
+		let settings: AnimFrameModel = {
+			x: 0,
+			y: 0,
+			time: 0.1,
+		}
+		const nframes = this.frames.length;
+		if (options.guessPlacement) {
+			if (nframes > 1) {
+				// guess based on the relationship of the first two frames
+				const xdiff = this.frames[1].x - this.frames[0].x;
+				const ydiff = this.frames[1].y - this.frames[0].y;
+				settings.x = this.frames[nframes-1].x + xdiff;
+				settings.y = this.frames[nframes-1].y + ydiff;
+			} else if (nframes === 1) {
+				// no reference to go by.. just assume it's vertical layout
+				settings.x = this.frames[0].x;
+				settings.y = this.frames[0].y + this.sizeY;
+			}
+		}
+		if (options.duration) {
+			settings.time = options.duration;
+		}
+		const newframe = new AnimationFrame(this, settings);
+		this.frames.push(newframe);
+		this.onChange();
+	}
+
+	public removeFrame(id: string) {
+		this.frames = this.frames.filter(f => f.id !== id);
+		this.renameFrames();
+	}
+
+	public removeFromParent() {
+		this.animRoot.removeAnimation(this.id);
 	}
 }

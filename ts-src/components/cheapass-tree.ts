@@ -1,6 +1,8 @@
 
 import { customElement, LitElement, css, html, TemplateResult, property } from "lit-element";
 
+import "@material/mwc-icon"
+
 export interface CheapassTreeNode<T> {
 	label: string,
 	value?: T,
@@ -18,6 +20,7 @@ export interface ToCheapassTreeNode<T> {
 	toCheapassTreeNode(): CheapassTreeNode<T>;
 }
 
+
 @customElement("cheapass-tree")
 export class CheapassTree<T> extends LitElement {
 	public static get styles() {
@@ -30,17 +33,27 @@ export class CheapassTree<T> extends LitElement {
 				min-width: 200px;
 			}
 
-			pre {
+			.treeitem {
 				margin: 0;
 				padding: 4px;
 				border-bottom: 1px solid black;
+				display: flex;
+				align-items: center;
 				cursor: pointer;
 			}
-			pre:hover {
+			.treeitem:hover {
 				background-color: #DDD;
 			}
-			pre.selected {
+			.treeitem.selected {
 				background-color: pink;
+			}
+			.treeitem>span {
+				vertical-align: middle;
+			}
+			mwc-icon {
+				background-color: plum;
+				border-radius: 50%;
+				margin-right: 4px;
 			}
 			`
 		]
@@ -105,20 +118,29 @@ export class CheapassTree<T> extends LitElement {
 	}
 
 	private renderList(item: CheapassTreeNode<T>, hack: object, level: number): TemplateResult[] {
-		const spacing = "".padStart(level, "  ");
-		let arrow = "";
-		let cssClass = item.key === this.selected ? "selected" : "";
+		let padleft = 4 + level*24;
+		let arrow = html``;
+		let cssClass = item.key === this.selected ? "treeitem selected" : "treeitem";
 		let children: TemplateResult[] = [];
 		if (item.items && item.items.length > 0) {
 			const expanded = this.nodeAttribs?.get(item.key)?.expanded;
-			arrow = expanded ? "⮛" : "➢";
+			const icon = expanded ? "keyboard_arrow_down" : "keyboard_arrow_right";
+			arrow = html`<mwc-icon
+				@click="${(e: InputEvent) => this.expandNodeTapped(e, item)}">
+				${icon}
+			</mwc-icon>`;
 			if (expanded) {
 				children = item.items.flatMap(i => this.renderList(i, hack, level+1));
 			}
+		} else {
+			padleft += 4;
 		}
 		const currentNode = html`
-			<pre class="${cssClass}" @click="${() => this.nodeTapped(item)}"><!--
-				-->${spacing}${arrow}${item.label}</pre>`;
+			<div class="${cssClass}"
+				@click="${() => this.nodeTapped(item)}"
+				style="padding-left: ${padleft}px">
+				${arrow}<span>${item.label}</span>
+			</div>`;
 		return [currentNode, children].flat();
 	}
 
@@ -126,11 +148,16 @@ export class CheapassTree<T> extends LitElement {
 		this.renderhack = {};
 	}
 
-	private nodeTapped(node: CheapassTreeNode<T>) {
+	private expandNodeTapped(e: InputEvent, node: CheapassTreeNode<T>) {
+		e.stopPropagation();
 		const nodeAttr = this.nodeAttribs?.get(node.key);
 		if (nodeAttr) {
 			nodeAttr.expanded = !nodeAttr.expanded;
 		}
+		this.renderhack = {};
+	}
+
+	private nodeTapped(node: CheapassTreeNode<T>) {
 		this.selected = node.key;
 		this.dispatchEvent(new CustomEvent(
 			"node-selected", {

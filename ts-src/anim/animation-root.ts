@@ -58,9 +58,14 @@ export class AnimationRoot implements ChangeEvent, ToCheapassTreeNode<AnimationC
 
 		this.animations = [model.animation].flat()
 				.map(anim => {
-					const a = new Animation(anim)
+					const a = new Animation(this, anim)
 					a.onChange = () => this.onChange();
 					return a;
 				});
+	}
+
+	public removeAnimation(id: string) {
+		this.animations = this.animations.filter(a => a.id !== id);
+		this.onChange();
 	}
 }
