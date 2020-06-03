@@ -7,6 +7,7 @@ import { TreeSelectEvent } from "./components/cheapass-tree";
 import { AnimationComponent } from "./anim/animation-root";
 import { AnimatorSpritesheet } from "./components/spritesheet";
 import { AnimLoadedEvent } from "./components/controls";
+import { AppUtil } from "./common";
 
 export interface ChangeEvent {onChange: () => void};
 
@@ -40,7 +41,7 @@ export class AnimatorApp extends LitElement {
 	connectedCallback() {
 		super.connectedCallback();
 
-		if (window.IS_ELECTRON) {
+		if (AppUtil.IS_ELECTRON) {
 			console.log("It's electron town");
 		}
 	}

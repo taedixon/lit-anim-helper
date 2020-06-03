@@ -16,3 +16,13 @@ export class AppStyles {
 		}
 	`;
 }
+
+export class AppUtil {
+	private static isElectron?: boolean;
+	public static get IS_ELECTRON() {
+		if (AppUtil.isElectron === undefined) {
+			AppUtil.isElectron = /electron/i.test(navigator?.userAgent ?? "none");
+		}
+		return AppUtil.isElectron;
+	}
+}
