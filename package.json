@@ -5,13 +5,17 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --config ./webpack.config.js && cp -r node_modules/@webcomponents/webcomponentsjs dist"
+    "build": "./build.sh",
+    "package": "./package-linux.sh",
+    "package-win32": "electron-packager . lit-animator --platform win32 --arch x64"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^13.13.4",
     "@webcomponents/webcomponentsjs": "^2.4.3",
+    "electron": "^8.2.5",
+    "electron-packager": "^14.2.1",
     "lit-element": "^2.3.1",
     "ts-loader": "^7.0.1",
     "tslint": "^6.1.1",

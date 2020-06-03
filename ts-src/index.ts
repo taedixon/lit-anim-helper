@@ -37,6 +37,15 @@ export class AnimatorApp extends LitElement {
 			</div>`;
 	}
 
+	connectedCallback() {
+		super.connectedCallback();
+
+		if (window.IS_ELECTRON) {
+			console.log("It's electron town");
+		}
+	}
+
+
 	private get spritesheet() {
 		return this.shadowRoot?.getElementById("spritesheet") as AnimatorSpritesheet;
 	}
