@@ -1,8 +1,16 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import * as fs from "fs";
+
+export interface FileResult {
+  path: string,
+  data: Uint8Array,
+}
+
+let win: BrowserWindow;
 
 function createWindow () {
   // Create the browser window.
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -38,6 +46,28 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
+})
+
+ipcMain.handle("get-message", () => "electron");
+
+ipcMain.handle("load-file", async (event, path): Promise<FileResult | null> => {
+  let opts: Electron.OpenDialogOptions = {
+    filters: [
+      {extensions: ["xml"], name: "XML files"}
+    ],
+    properties: ["openFile"]
+  }
+  const result = await dialog.showOpenDialog(win, opts);
+  if (!result.canceled && result.filePaths.length > 0) {
+    const fname = result.filePaths[0];
+    console.log(fname);
+    const data = fs.readFileSync(fname);
+    return {
+      path: fname,
+      data
+    }
+  }
+  return null;
 })
 
 // In this file you can include the rest of your app's specific main process
