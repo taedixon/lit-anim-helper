@@ -62,5 +62,8 @@ export class AnimatorApp extends LitElement {
 		anim.onChange = () => {
 			this.spritesheet.redraw();
 		}
+		if (AppUtil.IS_ELECTRON) {
+			this.spritesheet.getSpritesheetFromAnim(anim);
+		}
 	}
 }

@@ -1,7 +1,9 @@
 import { customElement, LitElement, css, html, property } from "lit-element";
-import { AnimationComponent } from "../anim/animation-root";
+import { AnimationComponent, AnimationRoot } from "../anim/animation-root";
 import { AnimationFrame } from "../anim/frame";
 import { Animation } from "../anim/animation";
+import { AppUtil } from "../common";
+import { ipcRenderer } from "electron";
 
 @customElement("animator-spritesheet")
 export class AnimatorSpritesheet extends LitElement {
@@ -24,8 +26,8 @@ export class AnimatorSpritesheet extends LitElement {
 			.canvas-container {
 				overflow: auto;
 				display: flex;
-				justify-content: safe center;
-				align-items: safe center;
+				justify-content: center;
+				align-items: center;
 				position: absolute;
 				left: 1em;
 				right: 1em;
@@ -62,10 +64,15 @@ export class AnimatorSpritesheet extends LitElement {
 	private selected?: AnimationComponent;
 
 	public render() {
+		let input = html``;
+		if (!AppUtil.IS_ELECTRON) {
+			input = html`
+			<label for="image-input">Set the spritesheet</label>
+			<input id="image-input" @input="${this.onFileChange}" type="file" accept=".png" />`;
+		}
 		return html`
 		<h2>Editor</h2>
-		<label for="image-input">Set the spritesheet</label>
-		<input id="image-input" @input="${this.onFileChange}" type="file" accept=".png" />
+		${input}
 		<p class="error">${this.error}</p>
 		<div class="canvas-container"
 			@dragenter="${this.onDragEnter}"
@@ -189,5 +196,18 @@ export class AnimatorSpritesheet extends LitElement {
 		context.closePath();
 		context.stroke();
 		context.translate(-frame.x, -frame.y);
+	}
+
+	// electron-only
+	public async getSpritesheetFromAnim(anim :AnimationRoot) {
+		const spritesheet = `${anim.contentPath}/${anim.spritesheet}.png`
+		const data: Uint8Array|null = await ipcRenderer.invoke("read-file", spritesheet);
+		if (data != null) {
+			const blob = new Blob([data]);
+			this.spritesheet = await createImageBitmap(blob);
+			this.redraw();
+		} else {
+			console.error(`Couldn't read file at ${spritesheet}`);
+		}
 	}
 }

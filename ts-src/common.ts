@@ -18,6 +18,7 @@ export class AppStyles {
 }
 
 export class AppUtil {
+	public static readonly CONTENT_PATH = "../../Content/"
 	private static isElectron?: boolean;
 	public static get IS_ELECTRON() {
 		if (AppUtil.isElectron === undefined) {

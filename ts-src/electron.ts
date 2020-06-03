@@ -31,6 +31,8 @@ function createWindow () {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(createWindow)
 
+app.allowRendererProcessReuse = true;
+
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
@@ -50,7 +52,7 @@ app.on('activate', () => {
 
 ipcMain.handle("get-message", () => "electron");
 
-ipcMain.handle("load-file", async (event, path): Promise<FileResult | null> => {
+ipcMain.handle("choose-file", async (event, path): Promise<FileResult | null> => {
   let opts: Electron.OpenDialogOptions = {
     filters: [
       {extensions: ["xml"], name: "XML files"}
@@ -66,6 +68,14 @@ ipcMain.handle("load-file", async (event, path): Promise<FileResult | null> => {
       path: fname,
       data
     }
+  }
+  return null;
+});
+
+ipcMain.handle("read-file", async (event, path): Promise<Uint8Array | null> => {
+  if (typeof path === "string" && fs.existsSync(path)) {
+    const data = fs.readFileSync(path);
+    return data;
   }
   return null;
 })

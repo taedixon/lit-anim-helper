@@ -239,7 +239,7 @@ export class AnimatorControls extends LitElement {
 	}
 
 	private async showElectronFileDialog() {
-		const file: FileResult|null = await ipcRenderer.invoke("load-file");
+		const file: FileResult|null = await ipcRenderer.invoke("choose-file");
 		if (file != null) {
 			const fileText = Buffer.from(file.data).toString("utf-8");
 			this.parseXml(fileText, file.path);
