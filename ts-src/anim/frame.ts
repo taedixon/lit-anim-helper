@@ -42,10 +42,10 @@ export class AnimationFrame implements ChangeEvent, ToCheapassTreeNode<Animation
 		this.hitbox = model.hitbox ?? "";
 		this.sound = model.sound ?? "";
 		this.action = [model.action ?? []].flat();
-		this.x = +model.x;
-		this.y = +model.y;
-		this.time = +model.time;
-		this.alpha = model.alpha ? +model.alpha : 1.0;
+		this.x = +model.$.x;
+		this.y = +model.$.y;
+		this.time = +model.$.time;
+		this.alpha = model.$.alpha ? +model.$.alpha : 1.0;
 	}
 
 	public toCheapassTreeNode(parentKey = ""): CheapassTreeNode<AnimationComponent> {
@@ -55,6 +55,21 @@ export class AnimationFrame implements ChangeEvent, ToCheapassTreeNode<Animation
 			value: this,
 			key
 		}
+	}
+
+	public toModel(): AnimFrameModel {
+		const model: AnimFrameModel = {
+			hitbox: this.hitbox.length > 0 ? this.hitbox : undefined,
+			sound: this.sound.length > 0 ? this.sound : undefined,
+			action: this.action.length > 0 ? this.action : undefined,
+			$: {
+				x: this.x,
+				y: this.y,
+				time: this.time,
+				alpha: this.alpha !== 1.0 ? this.alpha : undefined
+			},
+		}
+		return model;
 	}
 
 	public removeFromParent() {

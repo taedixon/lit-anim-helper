@@ -51,11 +51,24 @@ export class AnimationRoot implements ChangeEvent, ToCheapassTreeNode<AnimationC
 		}
 	}
 
+	public toModel(): AnimRootModel {
+		const model = {
+			$: {
+				sprite_sheet: this._spritesheet,
+				lightmap: this.lightmap,
+				frame_offset_x: this.offsetX,
+				frame_offset_y: this.offsetY,
+			},
+			animation: this.animations.map(anim => anim.toModel())
+		}
+		return model;
+	}
+
 	private setFromModel(model: AnimRootModel) {
-		this._spritesheet = model.sprite_sheet;
-		this.lightmap = model.lightmap;
-		this.offsetX = +(model.frame_offset_x ?? 0);
-		this.offsetY = +(model.frame_offset_y ?? 0);
+		this._spritesheet = model.$.sprite_sheet;
+		this.lightmap = model.$.lightmap;
+		this.offsetX = +(model.$.frame_offset_x ?? 0);
+		this.offsetY = +(model.$.frame_offset_y ?? 0);
 
 		this.animations = [model.animation].flat()
 				.map(anim => {

@@ -14,6 +14,9 @@ export class AppStyles {
 		.error {
 			color: tomato;
 		}
+		h3 {
+			margin-top: 0;
+		}
 	`;
 }
 
@@ -25,5 +28,16 @@ export class AppUtil {
 			AppUtil.isElectron = /electron/i.test(navigator?.userAgent ?? "none");
 		}
 		return AppUtil.isElectron;
+	}
+
+	public static removeUndefinedKeys(obj: {[index: string]: any}) {
+		Object.keys(obj).forEach(key => {
+			if (obj[key] && typeof obj[key] === "object") {
+				AppUtil.removeUndefinedKeys(obj[key]); // recurse
+			} else if (obj[key] == null) {
+				delete obj[key]; // delete
+			}
+		});
+		return obj;
 	}
 }

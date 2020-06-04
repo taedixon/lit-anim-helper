@@ -46,13 +46,13 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 	}
 
 	private setFromModel(model: AnimModel) {
-		this.name = model.name;
-		this.offsetX = +(model.frame_offset_x ?? this.offsetX);
-		this.offsetY = +(model.frame_offset_y ?? this.offsetY);
-		this.sizeX = +model.frame_size_x;
-		this.sizeY = +model.frame_size_y;
-		this.looping = !(model.looping?.toLowerCase() === "false")
-		this.randomizeStart = model.randomizeStart?.toLowerCase() == 'true';
+		this.name = model.$.name;
+		this.offsetX = +(model.$.frame_offset_x ?? this.offsetX);
+		this.offsetY = +(model.$.frame_offset_y ?? this.offsetY);
+		this.sizeX = +model.$.frame_size_x;
+		this.sizeY = +model.$.frame_size_y;
+		this.looping = !(model.$.looping?.toLowerCase() === "false")
+		this.randomizeStart = model.$.randomizeStart?.toLowerCase() == 'true';
 
 		this.frames = [model.frame ?? []].flat()
 				.map(frame => {
@@ -81,6 +81,22 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 		}
 	}
 
+	public toModel(): AnimModel {
+		const model: AnimModel = {
+			$: {
+				name: this.name,
+				frame_offset_x: this.offsetX !== 0 ? this.offsetX : undefined,
+				frame_offset_y: this.offsetY !== 0 ? this.offsetY : undefined,
+				frame_size_x: this.sizeX,
+				frame_size_y: this.sizeY,
+				looping: `${this.looping}`,
+				randomizeStart: `${this.randomizeStart}`,
+			},
+			frame: this.frames.map(fr => fr.toModel()),
+		}
+		return model;
+	}
+
 	public layoutFrames(options: LayoutFrameOptions) {
 		this.frames = [];
 		this.sizeX = options.width;
@@ -89,7 +105,7 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 		let y = options.startY;
 		for (let i = 0; i < options.numberOfFrames; i++) {
 			const newframe = new AnimationFrame(this, {
-				x, y, time: options.delay
+				$: { x, y, time: options.delay}
 			})
 			newframe.name = `Frame ${i}`;
 			this.frames.push(newframe);
@@ -104,9 +120,11 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 
 	public addFrame(options: AddFrameOptions) {
 		let settings: AnimFrameModel = {
-			x: 0,
-			y: 0,
-			time: 0.1,
+			$: {
+				x: 0,
+				y: 0,
+				time: 0.1,
+			}
 		}
 		const nframes = this.frames.length;
 		if (options.guessPlacement) {
@@ -114,16 +132,16 @@ export class Animation implements ChangeEvent, ToCheapassTreeNode<AnimationCompo
 				// guess based on the relationship of the first two frames
 				const xdiff = this.frames[1].x - this.frames[0].x;
 				const ydiff = this.frames[1].y - this.frames[0].y;
-				settings.x = this.frames[nframes-1].x + xdiff;
-				settings.y = this.frames[nframes-1].y + ydiff;
+				settings.$.x = this.frames[nframes-1].x + xdiff;
+				settings.$.y = this.frames[nframes-1].y + ydiff;
 			} else if (nframes === 1) {
 				// no reference to go by.. just assume it's vertical layout
-				settings.x = this.frames[0].x;
-				settings.y = this.frames[0].y + this.sizeY;
+				settings.$.x = this.frames[0].x;
+				settings.$.y = this.frames[0].y + this.sizeY;
 			}
 		}
 		if (options.duration) {
-			settings.time = options.duration;
+			settings.$.time = options.duration;
 		}
 		const newframe = new AnimationFrame(this, settings);
 		this.frames.push(newframe);

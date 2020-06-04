@@ -2,7 +2,7 @@ import { customElement, LitElement, css, html, property } from "lit-element";
 import { AnimationComponent, AnimationRoot } from "../anim/animation-root";
 import { AnimationFrame } from "../anim/frame";
 import { Animation } from "../anim/animation";
-import { AppUtil } from "../common";
+import { AppUtil, AppStyles } from "../common";
 
 @customElement("animator-spritesheet")
 export class AnimatorSpritesheet extends LitElement {
@@ -48,7 +48,8 @@ export class AnimatorSpritesheet extends LitElement {
 			.error {
 				color: tomato;
 			}
-			`
+			`,
+			AppStyles.COMMON_CLASSES,
 		]
 	}
 
@@ -67,7 +68,7 @@ export class AnimatorSpritesheet extends LitElement {
 			<input id="image-input" @input="${this.onFileChange}" type="file" accept=".png" />`;
 		}
 		return html`
-		<h2>Editor</h2>
+		<h3>Editor</h3>
 		${input}
 		<p class="error">${this.error}</p>
 		<div class="canvas-container"

@@ -1,5 +1,5 @@
 import { LitElement, customElement, html, css, property, TemplateResult } from "lit-element";
-import { Parser } from "xml2js";
+import { Parser, Builder } from "xml2js";
 import "./cheapass-tree";
 import { AnimationRoot, AnimationComponent } from "../anim/animation-root";
 import { TreeSelectEvent, CheapassTree } from "./cheapass-tree";
@@ -74,6 +74,7 @@ export class AnimatorControls extends LitElement {
 
 	public render() {
 		let filepicker: TemplateResult;
+		let saveButton = html``;
 		if (AppUtil.IS_ELECTRON) {
 			filepicker = html`
 			<mwc-button raised label="Choose xml file" @click="${this.showElectronFileDialog}">
@@ -83,9 +84,16 @@ export class AnimatorControls extends LitElement {
 			<label for="xml-input">Choose an animation to edit</label>
 			<input id="xml-input" @input="${this.onFileChange}" type="file" accept=".xml"/>`;
 		}
+		if (this.loadedAnim) {
+			const saveAction = AppUtil.IS_ELECTRON ? this.onSaveElectron : this.onSaveBrowser;
+			saveButton = html`
+			<mwc-button raised label="Export XML" @click="${saveAction}">
+			</mwc-button>`
+		}
 		return html`
-			<h2>Controls</h2>
+			<h3>Controls</h3>
 			${filepicker}
+			${saveButton}
 			<p class="error">${this.error}</p>
 			<cheapass-tree id="anim-tree" .rootNode="${this.loadedAnim}"
 				@node-selected="${this.onTreeNodeSelect}">
@@ -218,7 +226,6 @@ export class AnimatorControls extends LitElement {
 
 	private async parseXml(xml: string, path: string) {
 		const parser = new Parser({
-			mergeAttrs: true,
 			explicitArray: false,
 			explicitRoot: false,
 		});
@@ -246,5 +253,30 @@ export class AnimatorControls extends LitElement {
 				this.parseXml(fileText, file.path);
 			}
 		}
+	}
+
+	private onSaveBrowser() {
+
+	}
+
+	private async onSaveElectron() {
+		if (AppUtil.IS_ELECTRON && this.loadedAnim) {
+			const exportJson = this.loadedAnim.toModel();
+			const xml = await this.modelToXml(exportJson);
+			const ipcRenderer = (await import("electron")).ipcRenderer;
+			await ipcRenderer.invoke("save-xml", this.loadedAnim.filepath, xml);
+		}
+	}
+
+	private async modelToXml(model: AnimRootModel) {
+		const builder = new Builder({
+			mergeAttrs: true,
+			explicitArray: false,
+			explicitRoot: false,
+			headless: true,
+			rootName: "animations",
+		})
+		const stripped = AppUtil.removeUndefinedKeys(model);
+		return builder.buildObject(stripped);
 	}
 }
