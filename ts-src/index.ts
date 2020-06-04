@@ -7,8 +7,12 @@ import { TreeSelectEvent } from "./components/cheapass-tree";
 import { AnimationComponent } from "./anim/animation-root";
 import { AnimatorSpritesheet } from "./components/spritesheet";
 import { AnimLoadedEvent } from "./components/controls";
+import { AppUtil } from "./common";
 
-export interface ChangeEvent {onChange: () => void};
+export interface ChangeEvent {
+	onChange: () => void;
+	customStep?: Map<keyof this & string, number>;
+};
 
 @customElement("animator-app")
 export class AnimatorApp extends LitElement {
@@ -37,6 +41,16 @@ export class AnimatorApp extends LitElement {
 			</div>`;
 	}
 
+	async connectedCallback() {
+		super.connectedCallback();
+		if (AppUtil.IS_ELECTRON) {
+			const ipcRenderer = (await import("electron")).ipcRenderer;
+			const msg = await ipcRenderer.invoke("get-message");
+			console.log(`It's ${msg} town`);
+		}
+	}
+
+
 	private get spritesheet() {
 		return this.shadowRoot?.getElementById("spritesheet") as AnimatorSpritesheet;
 	}
@@ -49,6 +63,9 @@ export class AnimatorApp extends LitElement {
 		const anim = e.detail
 		anim.onChange = () => {
 			this.spritesheet.redraw();
+		}
+		if (AppUtil.IS_ELECTRON) {
+			this.spritesheet.getSpritesheetFromAnim(anim);
 		}
 	}
 }

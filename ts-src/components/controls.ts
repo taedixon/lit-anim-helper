@@ -14,8 +14,9 @@ import "./object-controls";
 import "@material/mwc-button"
 import "./layout-frames-dialog";
 import { LayoutFramesDialog } from "./layout-frames-dialog";
-import { AppStyles } from "../common";
+import { AppStyles, AppUtil } from "../common";
 import { Button } from "@material/mwc-button";
+import { FileResult } from "../electron";
 
 @customElement("animator-controls")
 export class AnimatorControls extends LitElement {
@@ -72,10 +73,19 @@ export class AnimatorControls extends LitElement {
 	}
 
 	public render() {
+		let filepicker: TemplateResult;
+		if (AppUtil.IS_ELECTRON) {
+			filepicker = html`
+			<mwc-button raised label="Choose xml file" @click="${this.showElectronFileDialog}">
+			</mwc-button>`
+		} else {
+			filepicker = html`
+			<label for="xml-input">Choose an animation to edit</label>
+			<input id="xml-input" @input="${this.onFileChange}" type="file" accept=".xml"/>`;
+		}
 		return html`
 			<h2>Controls</h2>
-			<label for="xml-input">Choose an animation to edit</label>
-			<input id="xml-input" @input="${this.onFileChange}" type="file" accept=".xml"/>
+			${filepicker}
 			<p class="error">${this.error}</p>
 			<cheapass-tree id="anim-tree" .rootNode="${this.loadedAnim}"
 				@node-selected="${this.onTreeNodeSelect}">
@@ -224,6 +234,17 @@ export class AnimatorControls extends LitElement {
 			}));
 		} else {
 			throw new Error(`Failed to load ${path}`);
+		}
+	}
+
+	private async showElectronFileDialog() {
+		if (AppUtil.IS_ELECTRON) {
+			const ipcRenderer = (await import("electron")).ipcRenderer;
+			const file: FileResult|null = await ipcRenderer.invoke("choose-file");
+			if (file != null) {
+				const fileText = Buffer.from(file.data).toString("utf-8");
+				this.parseXml(fileText, file.path);
+			}
 		}
 	}
 }
