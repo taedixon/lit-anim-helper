@@ -80,6 +80,7 @@ export class AnimatorSpritesheet extends LitElement {
 			<canvas id="canvas">
 			</canvas>
 			<img id="helpful" src="./static/dragdrop.png" style="display:none"/>
+			<img id="pattern" src="./static/pattern.png" style="display:none" />
 		</div>
 		`;
 	}
@@ -96,6 +97,10 @@ export class AnimatorSpritesheet extends LitElement {
 
 	private get canvas() {
 		return this.shadowRoot?.getElementById("canvas") as HTMLCanvasElement;
+	}
+
+	private get pattern() {
+		return this.shadowRoot?.getElementById("pattern") as HTMLImageElement;
 	}
 
 	private get canvasOverlay() {
@@ -141,6 +146,8 @@ export class AnimatorSpritesheet extends LitElement {
 		reader.onloadend = async () => {
 			const data = new Blob([reader.result as ArrayBuffer]);
 			this.spritesheet = await createImageBitmap(data);
+			this.dispatchEvent(new CustomEvent("spritesheet-changed",
+				{detail: this.spritesheet}))
 			this.redraw();
 		}
 		reader.onerror = (e) => {
@@ -157,12 +164,22 @@ export class AnimatorSpritesheet extends LitElement {
 		}
 		if (!this.spritesheet) {
 			const img = this.shadowRoot?.getElementById("helpful") as HTMLImageElement;
-			console.log(img);
 			context.drawImage(img, 0, 0);
 			return;
 		}
-		this.canvas.width = this.spritesheet.width;
-		this.canvas.height = this.spritesheet.height;
+		if (this.canvas.width != this.spritesheet.width) {
+			this.canvas.width = this.spritesheet.width;
+		}
+		if (this.canvas.height != this.spritesheet.height) {
+			this.canvas.height = this.spritesheet.height;
+		}
+
+		const fill = this.pattern;
+		const patter = context.createPattern(fill, "repeat");
+		if (patter) {
+			context.fillStyle = patter;
+			context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+		}
 		context.drawImage(this.spritesheet, 0, 0);
 		if (this.selected) {
 			this.drawSelected(context, this.selected);
@@ -172,6 +189,7 @@ export class AnimatorSpritesheet extends LitElement {
 	private drawSelected(context: CanvasRenderingContext2D, selected: AnimationComponent) {
 		if (selected instanceof Animation) {
 			for (const frame of selected.frames) {
+				context.strokeStyle = "#222";
 				this.drawFrame(context, frame);
 			}
 		} else if (this.selected instanceof AnimationFrame) {
@@ -204,6 +222,8 @@ export class AnimatorSpritesheet extends LitElement {
 			if (data != null) {
 				const blob = new Blob([data]);
 				this.spritesheet = await createImageBitmap(blob);
+				this.dispatchEvent(new CustomEvent("spritesheet-changed",
+					{detail: this.spritesheet}))
 				this.redraw();
 			} else {
 				console.error(`Couldn't read file at ${spritesheet}`);

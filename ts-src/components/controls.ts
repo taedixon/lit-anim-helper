@@ -264,7 +264,7 @@ export class AnimatorControls extends LitElement {
 	}
 
 	private onSaveBrowser() {
-
+		throw new Error("Not implemented");
 	}
 
 	private async onSaveElectron() {

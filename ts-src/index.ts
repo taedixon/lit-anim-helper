@@ -8,6 +8,7 @@ import { AnimationComponent } from "./anim/animation-root";
 import { AnimatorSpritesheet } from "./components/spritesheet";
 import { AnimLoadedEvent } from "./components/controls";
 import { AppUtil } from "./common";
+import { AnimatorPreview } from "./components/preview";
 
 export interface ChangeEvent {
 	onChange: () => void;
@@ -36,8 +37,11 @@ export class AnimatorApp extends LitElement {
 					@node-selected="${this.onNodeSelected}"
 					@anim-loaded="${this.onAnimLoaded}">
 				</animator-controls>
-				<animator-spritesheet id="spritesheet"></animator-spritesheet>
-				<animator-preview></animator-preview>
+				<animator-spritesheet id="spritesheet"
+					@spritesheet-changed="${this.onSpritesheetChange}">
+
+				</animator-spritesheet>
+				<animator-preview id="preview"></animator-preview>
 			</div>`;
 	}
 
@@ -55,8 +59,13 @@ export class AnimatorApp extends LitElement {
 		return this.shadowRoot?.getElementById("spritesheet") as AnimatorSpritesheet;
 	}
 
+	private get preview() {
+		return this.shadowRoot?.getElementById("preview") as AnimatorPreview;
+	}
+
 	private onNodeSelected(e: TreeSelectEvent<AnimationComponent>) {
 		this.spritesheet.setSelected(e.detail.value);
+		this.preview.setSelected(e.detail.value);
 	}
 
 	private onAnimLoaded(e: AnimLoadedEvent) {
@@ -67,5 +76,9 @@ export class AnimatorApp extends LitElement {
 		if (AppUtil.IS_ELECTRON) {
 			this.spritesheet.getSpritesheetFromAnim(anim);
 		}
+	}
+
+	private onSpritesheetChange(event: CustomEvent<ImageBitmap>) {
+		this.preview.setSpritesheet(event.detail);
 	}
 }
