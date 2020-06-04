@@ -11,8 +11,6 @@ import { AppUtil } from "./common";
 
 export interface ChangeEvent {onChange: () => void};
 
-import { ipcRenderer } from "electron";
-
 @customElement("animator-app")
 export class AnimatorApp extends LitElement {
 	public static get styles() {
@@ -42,8 +40,9 @@ export class AnimatorApp extends LitElement {
 
 	async connectedCallback() {
 		super.connectedCallback();
-		const msg = await ipcRenderer.invoke("get-message");
 		if (AppUtil.IS_ELECTRON) {
+			const ipcRenderer = (await import("electron")).ipcRenderer;
+			const msg = await ipcRenderer.invoke("get-message");
 			console.log(`It's ${msg} town`);
 		}
 	}

@@ -16,7 +16,6 @@ import "./layout-frames-dialog";
 import { LayoutFramesDialog } from "./layout-frames-dialog";
 import { AppStyles, AppUtil } from "../common";
 import { Button } from "@material/mwc-button";
-import { ipcRenderer } from "electron";
 import { FileResult } from "../electron";
 
 @customElement("animator-controls")
@@ -239,10 +238,13 @@ export class AnimatorControls extends LitElement {
 	}
 
 	private async showElectronFileDialog() {
-		const file: FileResult|null = await ipcRenderer.invoke("choose-file");
-		if (file != null) {
-			const fileText = Buffer.from(file.data).toString("utf-8");
-			this.parseXml(fileText, file.path);
+		if (AppUtil.IS_ELECTRON) {
+			const ipcRenderer = (await import("electron")).ipcRenderer;
+			const file: FileResult|null = await ipcRenderer.invoke("choose-file");
+			if (file != null) {
+				const fileText = Buffer.from(file.data).toString("utf-8");
+				this.parseXml(fileText, file.path);
+			}
 		}
 	}
 }

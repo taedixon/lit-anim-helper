@@ -3,7 +3,6 @@ import { AnimationComponent, AnimationRoot } from "../anim/animation-root";
 import { AnimationFrame } from "../anim/frame";
 import { Animation } from "../anim/animation";
 import { AppUtil } from "../common";
-import { ipcRenderer } from "electron";
 
 @customElement("animator-spritesheet")
 export class AnimatorSpritesheet extends LitElement {
@@ -200,14 +199,17 @@ export class AnimatorSpritesheet extends LitElement {
 
 	// electron-only
 	public async getSpritesheetFromAnim(anim :AnimationRoot) {
-		const spritesheet = `${anim.contentPath}/${anim.spritesheet}.png`
-		const data: Uint8Array|null = await ipcRenderer.invoke("read-file", spritesheet);
-		if (data != null) {
-			const blob = new Blob([data]);
-			this.spritesheet = await createImageBitmap(blob);
-			this.redraw();
-		} else {
-			console.error(`Couldn't read file at ${spritesheet}`);
+		if (AppUtil.IS_ELECTRON) {
+			const spritesheet = `${anim.contentPath}/${anim.spritesheet}.png`
+			const ipcRenderer = (await import("electron")).ipcRenderer;
+			const data: Uint8Array|null = await ipcRenderer.invoke("read-file", spritesheet);
+			if (data != null) {
+				const blob = new Blob([data]);
+				this.spritesheet = await createImageBitmap(blob);
+				this.redraw();
+			} else {
+				console.error(`Couldn't read file at ${spritesheet}`);
+			}
 		}
 	}
 }
