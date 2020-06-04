@@ -1,10 +1,5 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
-import * as fs from "fs";
-
-export interface FileResult {
-  path: string,
-  data: Uint8Array,
-}
+import { app, BrowserWindow } from "electron";
+import { registerHandlers } from "./main-handlers";
 
 let win: BrowserWindow;
 
@@ -19,9 +14,8 @@ function createWindow () {
   })
 
   // and load the index.html of the app.
-
+  registerHandlers(win);
   win.loadFile('index.html')
-
   // Open the DevTools.
   win.webContents.openDevTools()
 }
@@ -49,36 +43,3 @@ app.on('activate', () => {
     createWindow()
   }
 })
-
-ipcMain.handle("get-message", () => "electron");
-
-ipcMain.handle("choose-file", async (event, path): Promise<FileResult | null> => {
-  let opts: Electron.OpenDialogOptions = {
-    filters: [
-      {extensions: ["xml"], name: "XML files"}
-    ],
-    properties: ["openFile"]
-  }
-  const result = await dialog.showOpenDialog(win, opts);
-  if (!result.canceled && result.filePaths.length > 0) {
-    const fname = result.filePaths[0];
-    console.log(fname);
-    const data = fs.readFileSync(fname);
-    return {
-      path: fname,
-      data
-    }
-  }
-  return null;
-});
-
-ipcMain.handle("read-file", async (event, path): Promise<Uint8Array | null> => {
-  if (typeof path === "string" && fs.existsSync(path)) {
-    const data = fs.readFileSync(path);
-    return data;
-  }
-  return null;
-})
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

@@ -16,7 +16,7 @@ import "./layout-frames-dialog";
 import { LayoutFramesDialog } from "./layout-frames-dialog";
 import { AppStyles, AppUtil } from "../common";
 import { Button } from "@material/mwc-button";
-import { FileResult } from "../electron";
+import { FileResult } from "../main-handlers";
 
 @customElement("animator-controls")
 export class AnimatorControls extends LitElement {
@@ -64,6 +64,13 @@ export class AnimatorControls extends LitElement {
 	@property()
 	private selected?: AnimationComponent;
 
+	@property()
+	private disableSave = false;
+
+	private readonly defaultSaveText = "Export XML";
+	@property()
+	private saveText = this.defaultSaveText;
+
 	private get layoutDialog() {
 		return this.shadowRoot?.getElementById("layout-frames-dialog") as LayoutFramesDialog;
 	}
@@ -87,7 +94,8 @@ export class AnimatorControls extends LitElement {
 		if (this.loadedAnim) {
 			const saveAction = AppUtil.IS_ELECTRON ? this.onSaveElectron : this.onSaveBrowser;
 			saveButton = html`
-			<mwc-button raised label="Export XML" @click="${saveAction}">
+			<mwc-button raised label="${this.saveText}" @click="${saveAction}"
+				?disabled="${this.disableSave}">
 			</mwc-button>`
 		}
 		return html`
@@ -261,10 +269,25 @@ export class AnimatorControls extends LitElement {
 
 	private async onSaveElectron() {
 		if (AppUtil.IS_ELECTRON && this.loadedAnim) {
+			this.disableSave = true;
+			this.saveText = "Working...";
 			const exportJson = this.loadedAnim.toModel();
 			const xml = await this.modelToXml(exportJson);
 			const ipcRenderer = (await import("electron")).ipcRenderer;
-			await ipcRenderer.invoke("save-xml", this.loadedAnim.filepath, xml);
+			const error: string|undefined = await ipcRenderer.invoke(
+					"save-file",
+					this.loadedAnim.filepath,
+					xml);
+			if (error) {
+				this.error = error;
+				this.disableSave = false;
+			} else {
+				this.saveText = "Saved!";
+				setTimeout(() => {
+					this.saveText = this.defaultSaveText;
+					this.disableSave = false;
+				}, 2000);
+			}
 		}
 	}
 
