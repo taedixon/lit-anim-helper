@@ -17,6 +17,8 @@ export class AnimationFrame implements ChangeEvent, ToCheapassTreeNode<Animation
 	public time = 0.125;
 	public alpha = 1.0;
 
+	public readonly customStep = new Map<keyof this & string, number>()
+
 	public onChange = () => {};
 
 	public get w() {
@@ -32,6 +34,8 @@ export class AnimationFrame implements ChangeEvent, ToCheapassTreeNode<Animation
 		if (model) {
 			this.setFromModel(model);
 		}
+		this.customStep.set("time", 0.001);
+		this.customStep.set("alpha", 0.01);
 	}
 
 	private setFromModel(model: AnimFrameModel) {

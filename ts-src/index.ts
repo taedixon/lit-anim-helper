@@ -9,7 +9,10 @@ import { AnimatorSpritesheet } from "./components/spritesheet";
 import { AnimLoadedEvent } from "./components/controls";
 import { AppUtil } from "./common";
 
-export interface ChangeEvent {onChange: () => void};
+export interface ChangeEvent {
+	onChange: () => void;
+	customStep?: Map<keyof this & string, number>;
+};
 
 @customElement("animator-app")
 export class AnimatorApp extends LitElement {

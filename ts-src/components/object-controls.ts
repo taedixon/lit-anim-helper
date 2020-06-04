@@ -59,6 +59,7 @@ export class ObjectControls<T extends ChangeEvent> extends LitElement {
 			</mwc-formfield>`;
 		} else {
 			let type: TextFieldType = "text";
+			let step = item.customStep?.get(field) ?? 1;
 			if (typeof itemValue === "number") {
 				type = "number";
 			}
@@ -75,6 +76,7 @@ export class ObjectControls<T extends ChangeEvent> extends LitElement {
 				<mwc-textfield label="${field}"
 					value="${itemValue}"
 					type="${type}"
+					step="${step}"
 					@change="${action}">
 				</mwc-textfield>
 			`

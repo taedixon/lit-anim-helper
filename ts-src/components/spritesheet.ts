@@ -24,9 +24,6 @@ export class AnimatorSpritesheet extends LitElement {
 
 			.canvas-container {
 				overflow: auto;
-				display: flex;
-				justify-content: center;
-				align-items: center;
 				position: absolute;
 				left: 1em;
 				right: 1em;

@@ -25,7 +25,7 @@ export class AnimatorControls extends LitElement {
 		return [
 			css`
 			:host {
-				background-color: lemon;
+				background-color: seashell;
 				max-width: 300px;
 				flex: 0 1 auto;
 				padding: 1em;
