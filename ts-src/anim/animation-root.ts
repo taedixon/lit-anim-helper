@@ -4,6 +4,8 @@ import { ChangeEvent } from "..";
 import { ToCheapassTreeNode, CheapassTreeNode } from "../components/cheapass-tree";
 import { AppUtil } from "../common";
 
+import * as path from "path";
+
 export type AnimationComponent = AnimationRoot|Animation|AnimationFrame;
 
 export class AnimationRoot implements ChangeEvent, ToCheapassTreeNode<AnimationComponent> {
@@ -28,8 +30,8 @@ export class AnimationRoot implements ChangeEvent, ToCheapassTreeNode<AnimationC
 
 	public get contentPath() {
 		if (this.filepath) {
-			const parent = this.filepath.substr(0, this.filepath.lastIndexOf('/'))
-			return `${parent}/${AppUtil.CONTENT_PATH}`;
+			const parent = this.filepath.substr(0, this.filepath.lastIndexOf(path.sep))
+			return `${parent}${path.sep}${AppUtil.CONTENT_PATH}`;
 		}
 		return undefined;
 	}

@@ -9,7 +9,7 @@
     "build-web": "./build-web.sh",
     "start": "electron dist/index.js",
     "package": "./package-linux.sh",
-    "package-win32": "electron-packager . lit-animator --platform win32 --arch x64"
+    "package-win32": "electron-packager ./dist lit-animator --platform win32 --arch x64 --overwrite"
   },
   "author": "",
   "license": "ISC",
